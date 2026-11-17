@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Destroyer of Worlds: a calculator that ends planets</title>
+<meta name="description" content="A calculator for fun. A small hooded destroyer walks over the keys and every sum cracks a planet. Works offline, nothing leaves your device.">
+<meta name="theme-color" content="#07060b">
+<link rel="icon" href="logo.svg"><link rel="stylesheet" href="vendor/fonts/fonts.css">
+<style>
+:root{--bg:#07060b;--panel:#100d18;--key:#1a1526;--key2:#241c35;--ink:#f2eef7;--mute:#8b84a0;--red:#ff2e4d;--amb:#ff9a3c;--line:#2d2540}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{min-height:100vh;min-height:100dvh;font:16px/1.4 "Archivo",system-ui,sans-serif;display:flex;justify-content:center;padding:max(14px,env(safe-area-inset-top)) 14px max(18px,env(safe-area-inset-bottom));
+ background:radial-gradient(ellipse at 50% -10%,#2a0f24 0,transparent 55%),radial-gradient(ellipse at 50% 120%,#2b1206 0,transparent 50%),var(--bg);overflow-x:hidden}
+main{width:min(100%,400px);display:flex;flex-direction:column;gap:12px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+h1{font:800 22px/1 "Archivo";font-stretch:75%;text-transform:uppercase;letter-spacing:.02em;margin:0}h1 em{font-style:normal;color:var(--red)}
+.tools{display:flex;gap:8px}.tools button{font:500 12px "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.08em;color:var(--mute);background:transparent;border:1px solid var(--line);border-radius:8px;min-height:44px;padding:0 12px;cursor:pointer}
+.tools button[aria-pressed=true]{color:var(--ink);border-color:var(--amb)}
+button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
+/* planet */
+.sky{position:relative;height:150px;border:1px solid var(--line);border-radius:16px;background:radial-gradient(circle at 50% 100%,#1a0c1c,#09070e 70%);overflow:hidden;display:grid;place-items:center}
+.sky:before{content:"";position:absolute;inset:0;background-image:radial-gradient(1px 1px at 12% 30%,#fff8,transparent),radial-gradient(1px 1px at 80% 20%,#fff6,transparent),radial-gradient(1.5px 1.5px at 65% 70%,#fff7,transparent),radial-gradient(1px 1px at 30% 80%,#fff5,transparent),radial-gradient(1px 1px at 92% 62%,#fff6,transparent),radial-gradient(1px 1px at 8% 66%,#fff5,transparent)}
+#planet{width:112px;height:112px;position:relative;transition:transform .2s}
+#planet svg{width:100%;height:100%;overflow:visible;display:block}
+#planet .crack{opacity:0;transition:opacity .25s;filter:drop-shadow(0 0 4px var(--red))}
+#planet[data-d="1"] .c1,#planet[data-d="2"] .c1,#planet[data-d="2"] .c2,#planet[data-d="3"] .c1,#planet[data-d="3"] .c2,#planet[data-d="3"] .c3,#planet[data-d="4"] .crack{opacity:1}
+#planet.hit{animation:hit .35s}
+@keyframes hit{20%{transform:translate(-4px,2px) scale(1.04)}50%{transform:translate(4px,-2px)}80%{transform:translate(-2px,1px)}}
+.score{position:absolute;left:12px;bottom:8px;font:500 11px "IBM Plex Mono",monospace;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.score b{color:var(--amb);font-weight:500}
+.ring{position:absolute;left:50%;top:50%;width:20px;height:20px;margin:-10px;border:3px solid var(--amb);border-radius:50%;opacity:0;pointer-events:none}
+.ring.go{animation:ring .8s ease-out}
+@keyframes ring{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(16)}}
+.bit{position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3px;border-radius:50%;background:var(--amb);pointer-events:none;animation:fly .9s ease-out forwards}
+@keyframes fly{to{transform:translate(var(--x),var(--y)) scale(.2);opacity:0}}
+#planet.gone{transform:scale(.2);opacity:0;transition:transform .5s,opacity .5s}
+#planet.born{animation:born .7s ease-out}
+@keyframes born{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+/* display */
+.screen{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px 16px;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end;text-align:right;overflow:hidden}
+.expr{font:400 15px "IBM Plex Mono",monospace;color:var(--mute);min-height:22px;overflow-wrap:anywhere}
+.res{font:800 clamp(40px,13vw,54px)/1.05 "Archivo";font-stretch:80%;overflow-wrap:anywhere;letter-spacing:-.01em}
+.res.err{color:var(--red);font-size:26px}
+.res.glitch{animation:gl .5s steps(2)}
+@keyframes gl{25%{text-shadow:3px 0 var(--red),-3px 0 #38f}75%{text-shadow:-3px 0 var(--red),3px 0 #38f}}
+.say{font:400 13px "IBM Plex Mono",monospace;color:var(--amb);min-height:20px;text-align:center}
+/* keys */
+.pad{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.k{position:relative;min-height:60px;border:1px solid var(--line);border-radius:14px;background:var(--key);color:var(--ink);font:700 24px "Archivo";cursor:pointer;touch-action:manipulation;transition:transform .08s,background .15s}
+.k:active,.k.down{transform:translateY(2px) scale(.97);background:var(--key2)}
+.k.op{color:var(--amb)}.k.fn{color:var(--mute);font-size:19px}.k.eq{background:var(--red);border-color:var(--red);color:#fff}
+.k.zero{grid-column:span 2}
+.k.cr:after{content:"";position:absolute;inset:0;border-radius:14px;opacity:.55;background:linear-gradient(115deg,transparent 46%,var(--red) 47%,transparent 49%),linear-gradient(35deg,transparent 60%,var(--amb) 61%,transparent 63%);pointer-events:none}
+.hero{position:absolute;left:0;top:0;width:44px;height:56px;margin:-46px 0 0 -22px;pointer-events:none;z-index:3;transition:transform .22s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 6px 8px #000a)}
+.hero svg{width:100%;height:100%;display:block;transform-origin:50% 100%}
+.hero.stomp svg{animation:stomp .26s}
+@keyframes stomp{0%{transform:scaleY(1.1)}50%{transform:scale(1.2,.78)}100%{transform:none}}
+.hero.idle svg{animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.hero .eye{animation:blink 3.4s infinite}@keyframes blink{0%,94%,100%{opacity:1}96%{opacity:.1}}
+footer{font:400 12px "IBM Plex Mono",monospace;color:var(--mute);text-align:center;line-height:1.7}footer a{color:inherit;display:inline-block;padding:10px 4px}
+body.shake main{animation:shake .45s}
+@keyframes shake{20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-1px)}}
+@media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style></head><body>
+<style>.beta{font:500 13px/1.4 "IBM Plex Mono",ui-monospace,monospace;background:#F0B429;color:#15171B;padding:8px 14px;text-align:center;position:fixed;left:0;right:0;top:0;z-index:9}body{padding-top:48px!important}</style>
+<div class="beta" role="note"><b>Test version.</b> This app is live, but its author has not checked it yet. If you use it, keep that in mind.</div>
+<main>
+<header><h1>Destroyer <em>of worlds</em></h1><div class="tools"><button id="snd" aria-pressed="false" type="button">Sound off</button></div></header>
+<div class="sky" aria-hidden="true"><div id="planet" data-d="0"></div><div class="ring" id="ring"></div><div class="score">Worlds ended <b id="cnt">0</b></div></div>
+<div class="screen"><div class="expr" id="expr"></div><div class="res" id="res" role="status" aria-live="polite">0</div></div>
+<div class="say" id="say">Press something. It will not end well.</div>
+<div class="pad" id="pad">
+<button class="k fn" data-k="AC" aria-label="Clear">AC</button><button class="k fn" data-k="BS" aria-label="Delete last">⌫</button><button class="k fn" data-k="%" aria-label="Percent">%</button><button class="k op" data-k="÷" aria-label="Divide">÷</button>
+<button class="k" data-k="7">7</button><button class="k" data-k="8">8</button><button class="k" data-k="9">9</button><button class="k op" data-k="×" aria-label="Multiply">×</button>
+<button class="k" data-k="4">4</button><button class="k" data-k="5">5</button><button class="k" data-k="6">6</button><button class="k op" data-k="−" aria-label="Minus">−</button>
+<button class="k" data-k="1">1</button><button class="k" data-k="2">2</button><button class="k" data-k="3">3</button><button class="k op" data-k="+" aria-label="Plus">+</button>
+<button class="k zero" data-k="0">0</button><button class="k" data-k="." aria-label="Decimal point">.</button><button class="k eq" data-k="=" aria-label="Equals">=</button>
+<div class="hero idle" id="hero" aria-hidden="true"><svg viewBox="0 0 44 56"><path d="M22 3C12 3 7 12 7 21c0 5 2 8 2 12L4 53h36l-5-20c0-4 2-7 2-12 0-9-5-18-15-18z" fill="#15101f" stroke="#ff2e4d" stroke-width="2" stroke-linejoin="round"/><path d="M11 5L8 -1l7 4M33 5l3-6-7 4" fill="#15101f" stroke="#ff2e4d" stroke-width="2" stroke-linejoin="round"/><path d="M12 21q10-5 20 0v6q-10 4-20 0z" fill="#07060b"/><rect class="eye" x="15" y="22" width="5" height="3" rx="1.5" fill="#ff9a3c"/><rect class="eye" x="24" y="22" width="5" height="3" rx="1.5" fill="#ff9a3c"/><circle cx="36" cy="40" r="4" fill="#ff9a3c" opacity=".9"/><path d="M12 53q10-6 20 0" fill="none" stroke="#ff2e4d" stroke-width="1.5" opacity=".6"/></svg></div>
+</div>
+<footer>For fun. Nothing leaves your device. Keys 0-9 + - * / % . Enter Backspace Esc work too.<br>MIT, by <a href="https://github.com/davydmedvedchuk">Davyd Medvedchuk</a> · <a href="https://github.com/davydmedvedchuk/destroyer-words">Source</a></footer>
+</main>
+<script src="calc.js"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = function (i) { return document.getElementById(i); };
+  var pad = $('pad'), hero = $('hero'), planet = $('planet'), exprEl = $('expr'), resEl = $('res'), say = $('say'), cnt = $('cnt');
+  var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var expr = '', shown = '0', fresh = false, damage = 0, worlds = 0, sound = false, ac = null, idleT = 0;
+  try { worlds = +localStorage.getItem('dow-worlds') || 0; } catch (e) {}
+  cnt.textContent = worlds;
+
+  var PLANET = '<svg viewBox="0 0 112 112"><defs><radialGradient id="pg" cx="35%" cy="30%"><stop offset="0" stop-color="#7a4a5c"/><stop offset=".55" stop-color="#3a2236"/><stop offset="1" stop-color="#150d1c"/></radialGradient></defs><circle cx="56" cy="56" r="50" fill="url(#pg)"/><ellipse cx="40" cy="42" rx="12" ry="7" fill="#0003"/><ellipse cx="72" cy="70" rx="15" ry="8" fill="#0003"/>' +
+    '<path class="crack c1" d="M52 8l5 16-9 14 10 10" fill="none" stroke="#ff2e4d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path class="crack c2" d="M104 50L84 56l-6 14 16 8" fill="none" stroke="#ff9a3c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>' +
+    '<path class="crack c3" d="M18 74l18-4 8 12-6 20" fill="none" stroke="#ff2e4d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  planet.innerHTML = PLANET;
+
+  var LINES = { key: ['Stomp.', 'Another crack.', 'It felt that.', 'Small steps. Big dents.', 'Careful with the 9.', 'Gravity is optional.'],
+    eq: ['Calculated. And a bit destroyed.', 'The maths holds. The planet does not.', 'Done. The dust will settle.', 'That sum had consequences.'],
+    gone: ['One world less. Pick a new one.', 'Gone. Quiet now.', 'Worlds ended: one more.'], zero: 'The universe says no. Dividing by zero is where even I stop.', clear: 'Fresh start. The planet is fine. For now.' };
+  var pick = function (a) { return a[Math.floor(Math.random() * a.length)]; };
+
+  function render() {
+    exprEl.textContent = expr;
+    resEl.className = 'res'; resEl.textContent = shown;
+    if (shown === 'Error') { resEl.className = 'res err'; resEl.textContent = 'Cannot divide by zero'; }
+  }
+  function cur() { var m = expr.match(/[0-9.]+%?$/); return m ? m[0] : null; }
+  function liveShown() { var c = cur(); return fresh ? shown : (c || (expr === '' ? '0' : shown)); }
+
+  function press(k) {
+    var last = expr.slice(-1), isOp = '+−×÷'.indexOf(k) >= 0;
+    if (k === 'AC') { expr = ''; shown = '0'; fresh = false; damage = 0; setDamage(); talk(LINES.clear); render(); return; }
+    if (k === 'BS') { if (fresh) { expr = ''; shown = '0'; fresh = false; } else expr = expr.slice(0, -1); shown = liveShown(); render(); return; }
+    if (k === '=') { equals(); return; }
+    if (fresh && !isOp && k !== '%') { expr = ''; }
+    if (fresh && (isOp || k === '%')) { expr = shown === 'Error' ? '' : shown; }
+    fresh = false;
+    if (/[0-9]/.test(k)) { if (last === '%') return; expr += k; }
+    else if (k === '.') { var c = cur(); if (c && c.indexOf('.') >= 0) return; if (!c) expr += '0'; expr += '.'; }
+    else if (k === '%') { if (!/[0-9]$/.test(expr)) return; expr += '%'; }
+    else if (isOp) {
+      if (expr === '' && k !== '−') return;
+      if (/[+−×÷]$/.test(expr)) expr = expr.slice(0, -1);
+      if (expr === '' && k !== '−') return;
+      expr += k;
+    }
+    shown = liveShown(); render(); crack(); talk(pick(LINES.key));
+  }
+  function equals() {
+    if (!expr || /[+−×÷]$/.test(expr)) return;
+    var r = Calc.evaluate(expr);
+    exprEl.textContent = expr + ' =';
+    shown = r.ok ? r.text : 'Error'; fresh = true; expr = expr;
+    resEl.className = 'res'; resEl.textContent = shown;
+    if (!r.ok) { resEl.className = 'res err'; resEl.textContent = 'Cannot divide by zero'; talk(LINES.zero); blast(false); return; }
+    resEl.classList.add('glitch');
+    damage++; setDamage();
+    if (damage >= 4) { destroy(); } else { blast(false); talk(pick(LINES.eq)); }
+  }
+  function talk(t) { say.textContent = t; }
+
+  /* planet */
+  function setDamage() { planet.setAttribute('data-d', Math.min(damage, 4)); }
+  function bits(n) {
+    var sky = planet.parentNode;
+    for (var i = 0; i < n; i++) {
+      var b = document.createElement('i'); b.className = 'bit'; var a = Math.random() * 6.283, d = 50 + Math.random() * 90;
+      b.style.setProperty('--x', Math.cos(a) * d + 'px'); b.style.setProperty('--y', Math.sin(a) * d * .7 + 'px');
+      if (i % 3 === 0) b.style.background = '#ff2e4d'; sky.appendChild(b); setTimeout(function (x) { return function () { x.remove(); }; }(b), 950);
+    }
+  }
+  function blast(big) {
+    planet.classList.remove('hit'); void planet.offsetWidth; planet.classList.add('hit');
+    var r = $('ring'); r.classList.remove('go'); void r.offsetWidth; r.classList.add('go');
+    bits(big ? 28 : 10);
+    if (!reduce) { document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake'); }
+    tone(big ? 60 : 110, big ? .5 : .2, 'sawtooth');
+  }
+  function destroy() {
+    blast(true); worlds++; cnt.textContent = worlds; try { localStorage.setItem('dow-worlds', worlds); } catch (e) {}
+    talk(pick(LINES.gone)); planet.classList.add('gone');
+    setTimeout(function () { damage = 0; planet.innerHTML = PLANET; setDamage(); planet.classList.remove('gone'); planet.classList.add('born'); setTimeout(function () { planet.classList.remove('born'); }, 750); }, 900);
+  }
+  function crack() {
+    var n = 0; if (damage >= 0) { var ks = pad.querySelectorAll('.k:not(.cr)'); if (Math.random() < .12 && ks.length) ks[Math.floor(Math.random() * ks.length)].classList.add('cr'); }
+    bits(3); tone(160, .08, 'square');
+  }
+
+  /* the destroyer walks to the key */
+  function moveTo(btn) {
+    var p = pad.getBoundingClientRect(), r = btn.getBoundingClientRect();
+    var x = r.left - p.left + r.width / 2, y = r.top - p.top + 10;
+    hero.classList.remove('idle');
+    hero.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+    hero.classList.remove('stomp'); void hero.offsetWidth; hero.classList.add('stomp');
+    clearTimeout(idleT); idleT = setTimeout(function () { hero.classList.add('idle'); }, 700);
+  }
+  function btnFor(k) { return pad.querySelector('[data-k="' + k + '"]'); }
+  function go(k) { var b = btnFor(k); if (b) { moveTo(b); b.classList.add('down'); setTimeout(function () { b.classList.remove('down'); }, 110); } press(k); }
+  pad.addEventListener('click', function (e) { var b = e.target.closest('.k'); if (b) go(b.getAttribute('data-k')); });
+  var MAP = { '*': '×', '/': '÷', '-': '−', 'Enter': '=', '=': '=', 'Backspace': 'BS', 'Escape': 'AC', 'x': '×', 'X': '×' };
+  document.addEventListener('keydown', function (e) {
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+    var k = MAP[e.key] || e.key;
+    if (/^[0-9.+%]$/.test(k) || '×÷−=BSAC'.indexOf(k) >= 0 && k.length <= 2) {
+      if (e.key === 'Enter' && e.target && e.target.matches && e.target.matches('.k:focus-visible')) return; // keyboard users: Enter presses the focused key
+      e.preventDefault(); if (document.activeElement && document.activeElement.classList.contains('k')) document.activeElement.blur(); go(k);
+    }
+  });
+  function place() { var b = btnFor('='); var p = pad.getBoundingClientRect(), r = b.getBoundingClientRect(); hero.style.transform = 'translate(' + (r.left - p.left + r.width / 2) + 'px,' + (r.top - p.top + 10) + 'px)'; }
+  addEventListener('resize', place); place(); setTimeout(place, 300);
+
+  /* sound: tiny synth, off by default */
+  function tone(f, dur, type) {
+    if (!sound) return;
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      var o = ac.createOscillator(), g = ac.createGain(); o.type = type; o.frequency.setValueAtTime(f * 2, ac.currentTime); o.frequency.exponentialRampToValueAtTime(f, ac.currentTime + dur);
+      g.gain.setValueAtTime(.12, ac.currentTime); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + dur); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime + dur);
+    } catch (e) {}
+  }
+  $('snd').onclick = function () { sound = !sound; this.setAttribute('aria-pressed', sound); this.textContent = sound ? 'Sound on' : 'Sound off'; tone(200, .1, 'square'); };
+  window.__dow = { state: function () { return { expr: expr, shown: shown, damage: damage, worlds: worlds }; } };
+})();
+</script></body></html>
