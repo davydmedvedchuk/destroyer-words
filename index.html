@@ -75,9 +75,10 @@ body.shake main{animation:shake .45s}
 <button class="k zero" data-k="0">0</button><button class="k" data-k="." aria-label="Decimal point">.</button><button class="k eq" data-k="=" aria-label="Equals">=</button>
 <div class="hero idle" id="hero" aria-hidden="true"><svg viewBox="0 0 52 64"><defs><pattern id="sl" width="4" height="3" patternUnits="userSpaceOnUse"><rect width="4" height="1.2" fill="#000" opacity=".5"/></pattern><clipPath id="hc"><path d="M26 3C14 3 8 13 8 24c0 6 2 9 1 14L4 60h44l-5-22c-1-5 1-8 1-14C44 13 38 3 26 3z"/></clipPath></defs><path d="M26 3C14 3 8 13 8 24c0 6 2 9 1 14L4 60h44l-5-22c-1-5 1-8 1-14C44 13 38 3 26 3z" fill="#0d2b19" stroke="#39ff7a" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="27" cy="29" rx="12" ry="9" fill="#03100a"/><path d="M15 31q12 5 24 0v6q-4 13-12 13t-12-13z" fill="#16452b" stroke="#39ff7a" stroke-width="1.2" stroke-linejoin="round" opacity=".95"/><path d="M12 21C12 10 19 6 27 6s14 4 14 15z" fill="#0a2314" stroke="#39ff7a" stroke-width="1.6" stroke-linejoin="round"/><path d="M37 19h13l-3.5 4.5H36z" fill="#0a2314" stroke="#39ff7a" stroke-width="1.6" stroke-linejoin="round"/><rect class="eye" x="19" y="26" width="4" height="2" rx="1" fill="#a6ffc6"/><rect class="eye" x="30" y="26" width="4" height="2" rx="1" fill="#a6ffc6"/><path d="M22 44v9M31 44v9" stroke="#39ff7a" stroke-width="1.2" opacity=".5" stroke-linecap="round"/><rect width="52" height="64" fill="url(#sl)" clip-path="url(#hc)"/></svg></div>
 </div>
-<footer>For fun. Nothing leaves your device. Keys 0-9 + - * / % . Enter Backspace Esc work too.<br>MIT, by <a href="https://github.com/davydmedvedchuk">Davyd Medvedchuk</a> · <a href="https://github.com/davydmedvedchuk/destroyer-words">Source</a></footer>
+<footer>For fun. Nothing leaves your device. Keys 0-9 + - * / % . Enter Backspace Esc work too.<br>The maths runs in hand-written WebAssembly (<a href="calc.wat">calc.wat</a>), because a simple thing deserves a hard language.<br>MIT, by <a href="https://github.com/davydmedvedchuk">Davyd Medvedchuk</a> · <a href="https://github.com/davydmedvedchuk/destroyer-words">Source</a></footer>
 </main>
 <script src="calc.js"></script>
+<script>Calc.load();</script>
 <script>
 (function () {
   'use strict';

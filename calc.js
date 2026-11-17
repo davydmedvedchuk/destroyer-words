@@ -10,10 +10,10 @@
       pos = re.lastIndex;
       if (m[3]) {
         var op = m[3];
-        if (op === '-' && (prev === null || prev === 'op')) { var n = /^\d*\.?\d+|^\d+\./.exec(s.slice(pos)); if (!n) return null; re.lastIndex = pos + n[0].length; var pct = s.charAt(re.lastIndex) === '%'; if (pct) re.lastIndex++; pos = re.lastIndex; out.push({ n: -parseFloat(n[0]) / (pct ? 100 : 1) }); prev = 'num'; continue; }
+        if (op === '-' && (prev === null || prev === 'op')) { var n = /^\d*\.?\d+/.exec(s.slice(pos)); if (!n) return null; re.lastIndex = pos + n[0].length; var pct = s.charAt(re.lastIndex) === '%'; if (pct) re.lastIndex++; pos = re.lastIndex; out.push({ n: -parseFloat(n[0]) / (pct ? 100 : 1) }); prev = 'num'; continue; }
         if (prev !== 'num') return null;
         out.push({ op: op }); prev = 'op';
-      } else { out.push({ n: parseFloat(m[1]) / (m[2] ? 100 : 1) }); prev = 'num'; }
+      } else { if (prev === 'num') return null; out.push({ n: parseFloat(m[1]) / (m[2] ? 100 : 1) }); prev = 'num'; }
     }
     if (pos !== s.length || prev !== 'num') return null;
     return out;
@@ -23,7 +23,7 @@
     if (a !== 0 && (a >= 1e15 || a < 1e-9)) return r.toExponential(6).replace(/\.?0+e/, 'e').replace('e+', 'e');
     return String(r).replace('-', '−');
   }
-  function evaluate(s) {
+  function evaluateJS(s) {
     var t = tokens(s); if (!t) return { ok: false, value: NaN, text: 'Error' };
     var nums = [], ops = [];
     function apply() { var b = nums.pop(), a = nums.pop(), o = ops.pop(); nums.push(o === '+' ? a + b : o === '-' ? a - b : o === '*' ? a * b : a / b); }
@@ -36,5 +36,20 @@
     if (!isFinite(v)) return { ok: false, value: v, text: 'Error' };
     return { ok: true, value: v, text: format(v) };
   }
-  root.Calc = { evaluate: evaluate, tokens: tokens };
+  /* The page uses the hand-written WebAssembly version (calc.wat). evaluateJS stays as the reference for tests and as a fallback. */
+  var api = { evaluate: evaluateJS, evaluateJS: evaluateJS, tokens: tokens, engine: 'js' };
+  api.load = function (url) {
+    return fetch(url || 'calc.wasm').then(function (r) { return r.arrayBuffer(); }).then(function (b) { return WebAssembly.instantiate(b); }).then(function (m) {
+      var x = m.instance.exports, mem = new Uint8Array(x.mem.buffer);
+      api.evaluate = function (s) {
+        s = String(s).replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-').replace(/\s+/g, '');
+        if (s.length > 1000 || /[^\x20-\x7e]/.test(s)) return { ok: false, value: NaN, text: 'Error' };
+        for (var i = 0; i < s.length; i++) mem[i] = s.charCodeAt(i);
+        var v = x.eval(s.length);
+        return x.status() === 0 ? { ok: true, value: v, text: format(v) } : { ok: false, value: NaN, text: 'Error' };
+      };
+      api.engine = 'wasm'; return api;
+    }).catch(function () { return api; });
+  };
+  root.Calc = api;
 })(typeof window !== 'undefined' ? window : globalThis);

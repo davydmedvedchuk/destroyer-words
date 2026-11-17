@@ -17,6 +17,15 @@ with sync_playwright() as p:
     b = p.chromium.launch(); pg = b.new_page(viewport={"width": 390, "height": 844}); reqs = []
     pg.on("request", lambda r: reqs.append(r.url)); errs = []; pg.on("pageerror", lambda e: errs.append(str(e)))
     pg.goto(base + "/index.html"); pg.wait_for_selector("#pad")
+    pg.wait_for_function("Calc.engine === 'wasm'", timeout=5000)
+    check("the page runs the WebAssembly engine", pg.evaluate("Calc.engine"), "wasm")
+    # the hand-written WebAssembly and the plain JavaScript reference must agree on everything, including nonsense
+    import random
+    random.seed(7); toks = list("0123456789") + [".", "+", "−", "×", "÷", "%"]
+    cases = ["2+3×4", "10÷4", "0.1+0.2", "−5+2", "50%", "200+10%", "5÷0", "1÷3", "2−−3", "7×−2", "3.", ".5+.5", "12345678901234567890×10", "0.0000000001", "1÷0×0", "−", "%", "5%%", "9×+2", "1e5", "2 3"]
+    cases += ["".join(random.choice(toks) for _ in range(random.randint(1, 9))) for _ in range(1500)]
+    bad = pg.evaluate("""cs => cs.filter(s => { const a = Calc.evaluate(s), b = Calc.evaluateJS(s); return a.ok !== b.ok || (a.ok && a.text !== b.text); })""", cases)
+    check("wasm and JS agree on %d sums" % len(cases), bad[:5], [])
     ev = lambda s: pg.evaluate("s => { const r = Calc.evaluate(s); return [r.ok, r.text]; }", s)
     for s, want in [("2+3×4", [True, "14"]), ("10÷4", [True, "2.5"]), ("0.1+0.2", [True, "0.3"]), ("−5+2", [True, "−3"]), ("50%", [True, "0.5"]),
                     ("2−−3", [True, "5"]), ("1÷3", [True, "0.333333333333"]), ("5÷0", [False, "Error"]), ("7×", [False, "Error"]), ("", [False, "Error"])]:

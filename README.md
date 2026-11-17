@@ -11,7 +11,7 @@ It is a real calculator: `+ − × ÷ %`, decimals, backspace, keyboard input. I
 ## Details
 
 - Nothing leaves your device. No analytics, no cookies, no fonts from other sites. The only thing stored is the count of ended worlds, in your browser.
-- The maths is a small parser in [`calc.js`](calc.js), without `eval`. Dividing by zero says so instead of showing "Infinity".
+- **The maths is hand-written WebAssembly.** [`calc.wat`](calc.wat) is about 150 lines of low-level assembly-style code: it reads the sum byte by byte, keeps its own number and operator stacks in memory and applies the order of operations by hand. It assembles to a 976-byte `calc.wasm` (`./build.sh`, needs [wabt](https://github.com/WebAssembly/wabt)). A plain JavaScript version in [`calc.js`](calc.js) is the reference for the tests and the fallback if WebAssembly cannot load. No `eval` anywhere. Dividing by zero says so instead of showing "Infinity".
 - Sound is a tiny synthesizer and is off until you press the button.
 - With "reduce motion" turned on in the system, the shaking and walking animations are switched off.
 - Keys: `0-9 + - * / % .`, `Enter` for equals, `Backspace`, `Esc` to clear.
@@ -23,7 +23,7 @@ pip install playwright && playwright install chromium
 python tests/test_calc.py
 ```
 
-Checks the maths, the buttons and keyboard, that the character moves between keys, that a world ends after four sums, that nothing sideways-scrolls at phone width, and that nothing is requested from other sites.
+Checks that the WebAssembly and the JavaScript reference give the same answer on about 1500 sums (valid and nonsense), the buttons and keyboard, that the character moves between keys, that a world ends after four sums, that nothing sideways-scrolls at phone width, and that nothing is requested from other sites.
 
 ## Limits
 
