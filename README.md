@@ -2,9 +2,7 @@
 
 ![Destroyer of Worlds](docs/banner.jpg)
 
-> **Test version.** This app is live, but I have not checked it myself yet. If you want to use it, keep that in mind.
-
-A calculator for fun. A small hooded destroyer walks over the keys, every sum cracks the planet above, and the fourth sum ends it. A new planet appears and the counter goes up.
+A calculator for fun. A small hooded destroyer in a green terminal glow walks over the keys, every sum cracks the planet above, and the fourth sum ends it. A new planet appears and the counter goes up.
 
 It is a real calculator: `+ − × ÷ %`, decimals, backspace, keyboard input. It follows the usual order of operations, so `2+3×4` is 14.
 

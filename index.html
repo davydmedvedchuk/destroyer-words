@@ -50,7 +50,7 @@ button:focus-visible{outline:3px solid var(--amb);outline-offset:2px}
 .k.op{color:var(--amb)}.k.fn{color:var(--mute);font-size:19px}.k.eq{background:var(--red);border-color:var(--red);color:#fff}
 .k.zero{grid-column:span 2}
 .k.cr:after{content:"";position:absolute;inset:0;border-radius:14px;opacity:.55;background:linear-gradient(115deg,transparent 46%,var(--red) 47%,transparent 49%),linear-gradient(35deg,transparent 60%,var(--amb) 61%,transparent 63%);pointer-events:none}
-.hero{position:absolute;left:0;top:0;width:44px;height:56px;margin:-46px 0 0 -22px;pointer-events:none;z-index:3;transition:transform .22s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 6px 8px #000a)}
+.hero{position:absolute;left:0;top:0;width:52px;height:64px;margin:-54px 0 0 -24px;pointer-events:none;z-index:3;transition:transform .22s cubic-bezier(.3,1.4,.5,1);filter:drop-shadow(0 0 7px #39ff7a77) drop-shadow(0 6px 8px #000a)}
 .hero svg{width:100%;height:100%;display:block;transform-origin:50% 100%}
 .hero.stomp svg{animation:stomp .26s}
 @keyframes stomp{0%{transform:scaleY(1.1)}50%{transform:scale(1.2,.78)}100%{transform:none}}
@@ -62,8 +62,6 @@ body.shake main{animation:shake .45s}
 @keyframes shake{20%{transform:translate(-5px,3px)}40%{transform:translate(5px,-3px)}60%{transform:translate(-3px,2px)}80%{transform:translate(3px,-1px)}}
 @media (prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
 </style></head><body>
-<style>.beta{font:500 13px/1.4 "IBM Plex Mono",ui-monospace,monospace;background:#F0B429;color:#15171B;padding:8px 14px;text-align:center;position:fixed;left:0;right:0;top:0;z-index:9}body{padding-top:48px!important}</style>
-<div class="beta" role="note"><b>Test version.</b> This app is live, but its author has not checked it yet. If you use it, keep that in mind.</div>
 <main>
 <header><h1>Destroyer <em>of worlds</em></h1><div class="tools"><button id="snd" aria-pressed="false" type="button">Sound off</button></div></header>
 <div class="sky" aria-hidden="true"><div id="planet" data-d="0"></div><div class="ring" id="ring"></div><div class="score">Worlds ended <b id="cnt">0</b></div></div>
@@ -75,7 +73,7 @@ body.shake main{animation:shake .45s}
 <button class="k" data-k="4">4</button><button class="k" data-k="5">5</button><button class="k" data-k="6">6</button><button class="k op" data-k="−" aria-label="Minus">−</button>
 <button class="k" data-k="1">1</button><button class="k" data-k="2">2</button><button class="k" data-k="3">3</button><button class="k op" data-k="+" aria-label="Plus">+</button>
 <button class="k zero" data-k="0">0</button><button class="k" data-k="." aria-label="Decimal point">.</button><button class="k eq" data-k="=" aria-label="Equals">=</button>
-<div class="hero idle" id="hero" aria-hidden="true"><svg viewBox="0 0 44 56"><path d="M22 3C12 3 7 12 7 21c0 5 2 8 2 12L4 53h36l-5-20c0-4 2-7 2-12 0-9-5-18-15-18z" fill="#15101f" stroke="#ff2e4d" stroke-width="2" stroke-linejoin="round"/><path d="M11 5L8 -1l7 4M33 5l3-6-7 4" fill="#15101f" stroke="#ff2e4d" stroke-width="2" stroke-linejoin="round"/><path d="M12 21q10-5 20 0v6q-10 4-20 0z" fill="#07060b"/><rect class="eye" x="15" y="22" width="5" height="3" rx="1.5" fill="#ff9a3c"/><rect class="eye" x="24" y="22" width="5" height="3" rx="1.5" fill="#ff9a3c"/><circle cx="36" cy="40" r="4" fill="#ff9a3c" opacity=".9"/><path d="M12 53q10-6 20 0" fill="none" stroke="#ff2e4d" stroke-width="1.5" opacity=".6"/></svg></div>
+<div class="hero idle" id="hero" aria-hidden="true"><svg viewBox="0 0 52 64"><defs><pattern id="sl" width="4" height="3" patternUnits="userSpaceOnUse"><rect width="4" height="1.2" fill="#000" opacity=".5"/></pattern><clipPath id="hc"><path d="M26 3C14 3 8 13 8 24c0 6 2 9 1 14L4 60h44l-5-22c-1-5 1-8 1-14C44 13 38 3 26 3z"/></clipPath></defs><path d="M26 3C14 3 8 13 8 24c0 6 2 9 1 14L4 60h44l-5-22c-1-5 1-8 1-14C44 13 38 3 26 3z" fill="#0d2b19" stroke="#39ff7a" stroke-width="1.8" stroke-linejoin="round"/><ellipse cx="27" cy="29" rx="12" ry="9" fill="#03100a"/><path d="M15 31q12 5 24 0v6q-4 13-12 13t-12-13z" fill="#16452b" stroke="#39ff7a" stroke-width="1.2" stroke-linejoin="round" opacity=".95"/><path d="M12 21C12 10 19 6 27 6s14 4 14 15z" fill="#0a2314" stroke="#39ff7a" stroke-width="1.6" stroke-linejoin="round"/><path d="M37 19h13l-3.5 4.5H36z" fill="#0a2314" stroke="#39ff7a" stroke-width="1.6" stroke-linejoin="round"/><rect class="eye" x="19" y="26" width="4" height="2" rx="1" fill="#a6ffc6"/><rect class="eye" x="30" y="26" width="4" height="2" rx="1" fill="#a6ffc6"/><path d="M22 44v9M31 44v9" stroke="#39ff7a" stroke-width="1.2" opacity=".5" stroke-linecap="round"/><rect width="52" height="64" fill="url(#sl)" clip-path="url(#hc)"/></svg></div>
 </div>
 <footer>For fun. Nothing leaves your device. Keys 0-9 + - * / % . Enter Backspace Esc work too.<br>MIT, by <a href="https://github.com/davydmedvedchuk">Davyd Medvedchuk</a> · <a href="https://github.com/davydmedvedchuk/destroyer-words">Source</a></footer>
 </main>
